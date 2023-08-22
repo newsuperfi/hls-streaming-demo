@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js"></script>
+    <video id="video" width="500" height="500" controls autoplay></video>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script>
+      const video = document.getElementById("video");
+      const videoSrc = "http://localhost:8000/live/tetete/index.m3u8";
+
+      // const hlsConfig = {
+      //   liveSyncDurationCount: 4, // Number of live segments to keep in the buffer
+      //   liveMaxLatencyDurationCount: 10, // Maximum number of live segments to buffer
+      // };
+      const hlsConfig = {
+        debug: true,
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 90,
+      };
+      // const hlsConfig = {
+      //   debug: false, // Set to true for debugging logs
+      //   enableWorker: true, // Enable or disable web workers for loading segments
+      //   maxBufferLength: 30, // Maximum number of buffered segments
+      //   maxMaxBufferLength: 60, // Maximum limit on maxBufferLength
+      //   startLevel: -1, // Start playback at the highest quality available (-1 for default behavior)
+      //   capLevelToPlayerSize: true, // Automatically cap quality based on player size
+      //   capLevelOnFPSDrop: true, // Automatically cap quality on FPS drop
+      //   initialLiveManifestSize: 3, // Number of initial segments to load for live streams
+      //   maxSeekHole: 2, // Maximum seek gap in seconds that can be tolerated
+      //   manifestLoadingTimeOut: 10000, // Timeout for loading the manifest in milliseconds
+      //   manifestLoadingMaxRetry: 3, // Maximum retries for loading the manifest
+      //   levelLoadingTimeOut: 10000, // Timeout for loading a level's segments in milliseconds
+      //   levelLoadingMaxRetry: 4, // Maximum retries for loading a level's segments
+      //   fragLoadingTimeOut: 10000, // Timeout for loading a fragment in milliseconds
+      //   fragLoadingMaxRetry: 6, // Maximum retries for loading a fragment
+      // };
+
+      if (Hls.isSupported()) {
+        const hls = new Hls(hlsConfig);
+        // hls.startLoad(startPosition);
+        hls.loadSource(videoSrc);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play();
+        });
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = videoSrc;
+        video.addEventListener("loadedmetadata", () => {
+          video.play();
+        });
+      }
+
+      hls.on(Hls.Events.ERROR, function (event, data) {
+        var errorType = data.type;
+        var errorDetails = data.details;
+        var errorFatal = data.fatal;
+
+        switch (data.details) {
+          case Hls.ErrorDetails.FRAG_LOAD_ERROR:
+            // ....
+            break;
+          default:
+            break;
+        }
+      });
+    </script>
+  </body>
+</html>
+
+<!-- uw.js:14 Uncaught TypeError: Cannot read properties of null (reading 'indexOf')
+    at ue.onVideoMutation (uw.js:14:831265)
+    at F.a.firefox.mutationObserver.I.debounce.leading (uw.js:14:829187)
+    at u (uw.js:14:42237)
+    at b (uw.js:14:42285)
+    at MutationObserver.p (uw.js:14:42599) -->
